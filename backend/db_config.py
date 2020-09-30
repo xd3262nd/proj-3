@@ -1,0 +1,1 @@
+database_path = 'art_store.sqlite'
