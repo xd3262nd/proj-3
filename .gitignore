@@ -2,3 +2,4 @@
 art_store.sqlite
 .idea/
 venv/
+*.__pycache__
