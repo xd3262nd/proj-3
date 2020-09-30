@@ -55,6 +55,8 @@ def add_artist(self, name=''):
                 print(f'{data}\n')
             except Exception as e:
                 print(f'Error in adding {validated_name}. More detail: {e}')
+        else:
+            print(f'{validated_name} is already in the system. Please try to add another artist.')
 
 
 def add_artwork(self):
