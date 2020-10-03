@@ -1,5 +1,4 @@
 
-
 class Connector:
 
     def __init__(self, db):
@@ -12,7 +11,7 @@ class Connector:
         result = self.db.search_artist(name)
         return result
 
-    def add_artwork(self, name, price,artist,availability):
+    def add_artwork(self, name, price ,artist ,availability):
         self.db.add_new_artwork(name, price, artist, availability)
 
     def search_all_artwork_one_artist(self, artist):
@@ -23,8 +22,8 @@ class Connector:
         result = self.db.show_all_artwork()
         return result
 
-    def update_availability(self, artwork, avaibility):
-        rows_updated = self.db.update_availability(artwork, avaibility)
+    def update_availability(self, artwork, availability):
+        rows_updated = self.db.update_availability(artwork, availability)
         return rows_updated
 
     def show_all_available_artwork(self, artist):
@@ -58,5 +57,3 @@ class Connector:
         num_artists = self.db.artist_num()
 
         return num_artists
-
-

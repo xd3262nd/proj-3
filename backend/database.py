@@ -34,9 +34,9 @@ class ArtDB:
         data = Artwork.select()
         return data
 
-    def show_all_available_artwork_by_artist(self, artist):
+    def show_all_available_artwork_by_artist(self, name):
         try:
-            available_artwork = Artwork.select().where(Artwork.artist == artist.id) and (Artwork.availability == True)
+            available_artwork = Artwork.select().where((Artwork.artist == name) & (Artwork.availability == True))
             return available_artwork
         except IntegrityError as e:
             raise ArtStoreError(f'Error occurred while querying.\nMore detail: {e}\n')
@@ -62,7 +62,7 @@ class ArtDB:
         except ArtStoreError as e:
             print(f'Error occurred.\nMore detail: {e}\n')
 
-    def search_art_name(self, artname,artist):
+    def search_art_name(self, artname, artist):
         try:
             data = Artwork.select().where(Artwork.art_name == artname, Artwork.artist == artist)
             return data
@@ -89,7 +89,9 @@ class ArtDB:
         num_artists = Artist.select().count()
         return num_artists
 
-
+    def artwork_num(self):
+        num_artists = Artist.select().count()
+        return num_artists
 
 
 class ArtStoreError(Exception):

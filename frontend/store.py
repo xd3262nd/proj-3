@@ -121,6 +121,11 @@ def show_all_artwork_by_artist(self):
             print()
         except Exception as e:
             print(f'Error in searching for {validated_name}. More detail: {e}')
+    else:
+        print('Invalid Artist Name. Please refer to the artist list below and re-enter a valid artist name.')
+        show_all_artist(self)
+        show_all_artwork_by_artist(self)
+
 
 
 def display_available_artwork_by_artist(self):
@@ -136,6 +141,10 @@ def display_available_artwork_by_artist(self):
             print()
         except Exception as e:
             print(f'Error in searching for {validated_name}. More detail: {e}')
+    else:
+        print('Invalid Artist Name. Please refer to the artist list below and re-enter a valid artist name.')
+        show_all_artist(self)
+        display_available_artwork_by_artist(self)
 
 
 def update_artwork_availability(self):
@@ -152,39 +161,44 @@ def update_artwork_availability(self):
             for row in data:
                 if row.availability:
                     availability = 'Available'
-                elif not row.availability:
+                else:
                     availability = 'Not Available'
                 print(f'ArtWork Name: {row.art_name}\tAvailability: {availability}')
                 artwork_list.append(row.art_name.lower())
             print()
+            artwork_name = input('What is artwork name you wish to update the availability?\t\t')
+            while artwork_name.lower() not in artwork_list:
+                artwork_name = input(f'Invalid input. Please enter the artwork by {validated_name} only.\t\t')
+
+            tmp_data = self.db_connection.search_art_name(artwork_name, validated_name)
+            art_availability = bool()
+            for row in tmp_data:
+                art_availability = row.availability
+
+            if art_availability:
+                art_availability = False
+            elif not art_availability:
+                art_availability = True
+
+            row_updated = self.db_connection.update_availability(artwork_name, art_availability)
+
+            if row_updated == 0:
+                print('Error occurred while updating the artwork. ')
+            else:
+                print('Successfully updated the artwork availability')
+
+            data = self.db_connection.search_art_name(artwork_name, validated_name)
+            for row in data:
+                print(row)
+            print()
         except Exception as e:
             print(f'Error in searching for {validated_name}. More detail: {e}')
-
-    artwork_name = input('What is artwork name you wish to update the availability?\t\t')
-    while artwork_name.lower() not in artwork_list:
-        artwork_name = input(f'Incorrect input. Please enter the artwork by {validated_name} only.\t\t')
-
-    tmp_data = self.db_connection.search_art_name(artwork_name, validated_name)
-    art_availability = bool()
-    for row in tmp_data:
-        art_availability = row.availability
-
-    if art_availability:
-        art_availability = False
-    elif not art_availability:
-        art_availability = True
-
-    row_updated = self.db_connection.update_availability(artwork_name, art_availability)
-
-    if row_updated == 0:
-        print('Error occurred while updating the artwork. ')
     else:
-        print('Successfully updated the artwork availability')
+        print('Sorry the artist you have entered is not valid. Please refer to the artist name list below.')
+        show_all_artist(self)
 
-    data = self.db_connection.search_art_name(artwork_name, validated_name)
-    for row in data:
-        print(row)
-    print()
+        update_artwork_availability(self)
+
 
 
 def delete_artwork(self):
