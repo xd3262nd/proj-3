@@ -1,25 +1,30 @@
 from unittest import TestCase
-from peewee import *
+# from peewee import *
+
+# order matters - swap out the test db before any of your code uses it 
+from backend import db_config
+db_config.database_path = 'test_art_store.sqlite'  # this file will be created in the root directory of your project
+
+import os   # or use this 
+db_config.database_path = os.path.join('test', 'test_art_store.sqlite') # if you want the test db in the test directory 
 
 from backend.model import Artist, Artwork
-from backend import db_config
 
 from backend.database import *
 
-db_config.database_path = 'test_art_store.sqlite'
-test_db = SqliteDatabase(db_config.database_path)
-test_tables = [Artist, Artwork]
+# test_db = SqliteDatabase(db_config.database_path)
+# test_tables = [Artist, Artwork]
 
 
 class TestArtWork(TestCase):
 
     def setUp(self):
-        Artist.database = test_db
-        Artwork.database = test_db
-        test_db.bind(test_tables, bind_refs=False, bind_backrefs=False)
+        # Artist.database = test_db
+        # Artwork.database = test_db
+        # test_db.bind(test_tables, bind_refs=False, bind_backrefs=False)
         # Create a new DB
         self.art_db = ArtDB()
-        test_db.create_tables(test_tables)
+        # test_db.create_tables(test_tables)
 
         Artwork.delete().execute()
         Artist.delete().execute()
@@ -40,6 +45,18 @@ class TestArtWork(TestCase):
         self.artwork2.save()
         self.artwork3.save()
 
+
+    def test_artwork_num(self):
+        # start with empty database 
+        Artwork(art_name='Sing Along', market_price=300, artist='test', availability=True).save()
+        self.assertEqual(1, self.art_db.artwork_num())
+        
+        Artwork(art_name='Walk Along', market_price=300, artist='test2', availability=True).save()
+        self.assertEqual(2, self.art_db.artwork_num())
+        
+        # look at artwork_num - why is this test failing? Does this help fix the other failing tests?
+
+
     def test_add_artist(self):
         artist = Artist(name='Artist ABC', email='abc@gmail.com')
         artist.save()
@@ -52,10 +69,12 @@ class TestArtWork(TestCase):
         artist5 = Artist(name='Luke Yong', email='l_you@gmail.com')
         artist6 = Artist(name='Lola You', email='lola_you@gmail.com')
 
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(IntegrityError):   
             artist4.save()
-            artist5.save()
+            artist5.save()   # Which one of these save calls do you expect to error? This test could use some more documentation
             artist6.save()
+
+            
 
     def test_artwork_availability_type(self):
         self.add_sample_data()
