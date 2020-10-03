@@ -53,5 +53,10 @@ class Connector:
         updated_row = self.db.delete_artwork(artname)
 
         return updated_row
+    def show_artist_count(self):
+
+        num_artists = self.db.artist_num()
+
+        return num_artists
 
 

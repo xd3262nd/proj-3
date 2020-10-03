@@ -57,7 +57,7 @@ class ArtDB:
 
     def show_all_artist(self):
         try:
-            artists = Artist.select()
+            artists = Artist.select().dicts()
             return artists
         except ArtStoreError as e:
             print(f'Error occurred.\nMore detail: {e}\n')
@@ -84,6 +84,10 @@ class ArtDB:
             return updated_row
         except ArtStoreError as e:
             print(f'Error occurred.\nMore detail: {e}\n')
+
+    def artist_num(self):
+        num_artists = Artist.select().count()
+        return num_artists
 
 
 

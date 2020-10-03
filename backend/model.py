@@ -5,12 +5,7 @@ db = SqliteDatabase(db_config.database_path)
 db.connect()
 
 
-class BaseModel(Model):
-    class Meta:
-        database = db
-
-
-class Artist(BaseModel):
+class Artist(Model):
     name = CharField(unique=True)
     email = CharField(unique=True)
 

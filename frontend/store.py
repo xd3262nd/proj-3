@@ -32,9 +32,9 @@ class Store:
                 show_all_artwork(self)
             elif selection == 8:
                 show_all_artist(self)
+
             elif selection is None:
                 break
-
 
 def add_artist(self, name=''):
     if name == '':
@@ -47,8 +47,8 @@ def add_artist(self, name=''):
         if is_existing is None:
             email = input(f'What is the email address for {validated_name}?\t\t')
             validated_email = validate_email_address(email)
-            try:
 
+            try:
                 self.db_connection.add_artist(validated_name, validated_email)
                 data = search_artist(self, validated_name)
                 print('Artist added.\nInformation:\n\t')
