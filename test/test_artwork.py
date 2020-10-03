@@ -14,12 +14,13 @@ test_tables = [Artist, Artwork]
 class TestArtWork(TestCase):
 
     def setUp(self):
+        Artist.database = test_db
+        Artwork.database = test_db
         test_db.bind(test_tables, bind_refs=False, bind_backrefs=False)
         # Create a new DB
         self.art_db = ArtDB()
         test_db.create_tables(test_tables)
-        Artist.database = test_db
-        Artwork.database = test_db
+
         Artwork.delete().execute()
         Artist.delete().execute()
 
@@ -31,12 +32,20 @@ class TestArtWork(TestCase):
         self.artist2.save()
         self.artist3.save()
 
+        self.artwork1 = Artwork(art_name='Sing Along', market_price=300, artist=self.artist1.name, availability=True)
+        self.artwork2 = Artwork(art_name='Paint Along', market_price=10, artist=self.artist2.name, availability=False)
+        self.artwork3 = Artwork(art_name='Swim Along', market_price=602, artist=self.artist3.name, availability=True)
+
+        self.artwork1.save()
+        self.artwork2.save()
+        self.artwork3.save()
+
     def test_add_artist(self):
-        artist = Artist(name='Artist ABC', email='artistabc@gmail.com')
+        artist = Artist(name='Artist ABC', email='abc@gmail.com')
         artist.save()
         self.assertEqual(1, self.art_db.artist_num())
 
-    def test_add_artist_not_unique(self):
+    def test_add_duplicate_artist_model(self):
         self.add_sample_data()
 
         artist4 = Artist(name='Lola You', email='l_you@gmail.com')
@@ -48,8 +57,37 @@ class TestArtWork(TestCase):
             artist5.save()
             artist6.save()
 
-    def test_artwork_availability(self):
+    def test_artwork_availability_type(self):
         self.add_sample_data()
-        artwork = Artwork(artist='John Doe', art_name='The Sample Art', market_price=999, availability='123')
-        self.assertRaises(AssertionError, artwork.save())
+        artwork = Artwork(artist='John Doe', art_name='The Sample Art', market_price=999, availability='yes')
+        self.assertRaises(TypeError, artwork.save())
+        artwork2 = Artwork(artist='John Doe', art_name='The Sample Art 2', market_price=999, availability='122233')
+        self.assertRaises(TypeError, artwork2.save())
+        artwork3 = Artwork(artist='John Doe', art_name='The Sample Art 3', market_price=999, availability=0)
+        self.assertRaises(TypeError, artwork3.save())
+
+        artwork4 = Artwork(artist='John Doe', art_name='The Sample Art 4', market_price=999)
+        with self.assertRaises(IntegrityError):
+            artwork4.save()
+
+    def test_add_duplicate_artwork(self):
+        self.add_sample_data()
+        test_artwork = Artwork(art_name='Swim Along', market_price=602, artist=self.artist3.name, availability=True)
+
+        with self.assertRaises(IntegrityError):
+            test_artwork.save()
+
+    def test_add_new_artwork(self):
+        self.add_sample_data()
+        artwork_pt2 = Artwork(art_name='Swim Along PT2', market_price=602, artist=self.artist3.name, availability=True)
+        artwork_pt2.save()
+        self.assertEqual(4, self.art_db.artwork_num())
+
+    def test_delete_existing_artwork(self):
+        self.add_sample_data()
+        self.art_db.delete_artwork('Sing Along')
+        self.assertEqual(2, self.art_db.artwork_num())
+
+    def test_change_artwork_status(self):
+        self.add_sample_data()
 
