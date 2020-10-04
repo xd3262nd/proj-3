@@ -90,8 +90,12 @@ class ArtDB:
         return num_artists
 
     def artwork_num(self):
-        num_artists = Artist.select().count()
+        num_artists = Artwork.select().count()
         return num_artists
+
+    def search_artwork(self, art_name):
+        data = Artwork.select().where(Artwork.art_name == art_name).dicts()
+        return data
 
 
 class ArtStoreError(Exception):
