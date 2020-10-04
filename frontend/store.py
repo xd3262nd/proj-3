@@ -1,12 +1,15 @@
 from .store_component import generate_menu
 from .input_validatation import *
+from backend.database import ArtStoreError
 
+# Get a new Validation Object
 VALIDATOR = SimpleValidator()
 
 
 class Store:
 
     def __init__(self, db_connection):
+        # Connect to the database connector
         self.db_connection = db_connection
 
     def main_page(self):
@@ -14,8 +17,10 @@ class Store:
         print('Welcome to the Art Store')
 
         while True:
+            # Print out the menu
             selection = generate_menu()
 
+            # Call function based on the user selection
             if selection == 1:
                 add_artist(self)
             elif selection == 2:
@@ -36,15 +41,17 @@ class Store:
             elif selection is None:
                 break
 
+
 def add_artist(self, name=''):
     if name == '':
         name = input('What is the artist name?\t\t')
-
+        # validate name
         validated_name = validate_name(name)
-
+        # Search if the artist already exist in the database
         is_existing = search_artist(self, validated_name)
 
         if is_existing is None:
+            # get and validate the email input
             email = input(f'What is the email address for {validated_name}?\t\t')
             validated_email = validate_email_address(email)
 
@@ -54,20 +61,23 @@ def add_artist(self, name=''):
                 print('Artist added.\nInformation:\n\t')
                 print(f'{data}\n')
             except Exception as e:
-                print(f'Error in adding {validated_name}. More detail: {e}')
+                raise ArtStoreError(f'Error in adding {validated_name}. More detail: {e}')
         else:
-            print(f'{validated_name} is already in the system. Please try to add another artist.')
+            print(f'{validated_name} is already in the system. Please try to add another artist. Cancelling adding new artist.')
+
 
 
 def add_artwork(self):
-    # name, price, artist, availability = True
+    # Get and validate artist name
     artist_name = input('What is the artist name?\t\t')
     validated_artist_name = validate_name(artist_name)
+    # Check if artist exist in the database
     is_existing = search_artist(self, validated_artist_name)
 
     # When the artist is not in the system
     if is_existing is None:
         print(f'{artist_name} is not in the system yet.')
+        # Print out all the artist to the user if there is some artist name in the system
         data = self.db_connection.show_all_artist()
         # When there is some artist name in the system
         if data.exists():
@@ -76,19 +86,25 @@ def add_artwork(self):
             for row in data:
                 print(f"\t{row['name']}")
             add_artwork(self)
+        # When there is no artist in the database yet
         else:
             # Prompt the user to add more artist in the system before add new artwork
-            print('Please add more data in the system beforehand.')
-            add_artist(self)
+            print('Please add more data in the system beforehand. Cancelling adding new artwork to the database.')
+
     # When the artist is in the system
     else:
+        # Get the artwork name and validate the name
         artwork_name = input('What is the name of the artwork?\t\t')
         validated_art_name = validate_artname(artwork_name)
+        # check if the artwork result is in the db yet
         artwork_result = self.db_connection.search_art_name(validated_art_name, is_existing['name'])
 
+        # when the artwork already exist
         if artwork_result.exists():
             print(f"Error.{is_existing['name']}\'s {validated_art_name} is already in the system.")
+        # When no artwork already exist
         else:
+            # Get price and availability for the new artwork
             price = int(input(f'What is the price for {validated_art_name}?\t\t'))
             availability = input(f'Is this {validated_art_name} still available? (yes/no)')
             validated_price = validate_price(price)
@@ -104,15 +120,18 @@ def add_artwork(self):
                     print(i)
                 print()
             except Exception as e:
-                print(f'Error in adding {validated_art_name}. More detail: {e}')
+                raise ArtStoreError(f'Error in adding {validated_art_name}. More detail: {e}')
 
 
-# Artwork (available and not available)
+# Show Artwork (available and not available)
 def show_all_artwork_by_artist(self):
+    # Get and validate artist name
     name = input('What is the artist name?\t\t')
     validated_name = validate_name(name)
+    # Check if the artist is already exists
     is_existing = search_artist(self, validated_name)
 
+    # If the artist is in the database
     if is_existing is not None:
         try:
             data = self.db_connection.search_all_artwork_one_artist(validated_name)
@@ -121,18 +140,22 @@ def show_all_artwork_by_artist(self):
             print()
         except Exception as e:
             print(f'Error in searching for {validated_name}. More detail: {e}')
+    # When the artist is not in the database
+    # Prompt user to add another artist
     else:
         print('Invalid Artist Name. Please refer to the artist list below and re-enter a valid artist name.')
         show_all_artist(self)
         show_all_artwork_by_artist(self)
 
 
-
 def display_available_artwork_by_artist(self):
+    # get and validate artist name
     name = input('What is the artist name?\t\t')
     validated_name = validate_name(name)
+    # Check if the artist is exist
     is_existing = search_artist(self, validated_name)
 
+    # When the artist is in system
     if is_existing is not None:
         try:
             data = self.db_connection.show_all_available_artwork(validated_name)
@@ -140,7 +163,8 @@ def display_available_artwork_by_artist(self):
                 print(row)
             print()
         except Exception as e:
-            print(f'Error in searching for {validated_name}. More detail: {e}')
+            raise ArtStoreError(f'Error in searching for {validated_name}. More detail: {e}')
+    # When the artist is not in the system
     else:
         print('Invalid Artist Name. Please refer to the artist list below and re-enter a valid artist name.')
         show_all_artist(self)
@@ -154,6 +178,7 @@ def update_artwork_availability(self):
 
     artwork_list = list()
 
+    # When the artist is in system
     if is_existing is not None:
         try:
             data = self.db_connection.search_all_artwork_one_artist(validated_name)
@@ -192,7 +217,8 @@ def update_artwork_availability(self):
                 print(row)
             print()
         except Exception as e:
-            print(f'Error in searching for {validated_name}. More detail: {e}')
+            raise ArtStoreError(f'Error in searching for {validated_name}. More detail: {e}')
+    # When the artist is not in system
     else:
         print('Sorry the artist you have entered is not valid. Please refer to the artist name list below.')
         show_all_artist(self)
@@ -200,33 +226,34 @@ def update_artwork_availability(self):
         update_artwork_availability(self)
 
 
-
 def delete_artwork(self):
     artwork_name = input('What is the artwork that you are trying to update their artwork from?\t\t')
     validated_art_name = validate_name(artwork_name)
     result = self.db_connection.get_artist_by_art_name(validated_art_name)
 
+    # When the artist is not in system
     if result.exists() is None:
         print(f'The {validated_art_name} is not in the system yet. Please try again later.')
         return
+    # When the artist is in system
+    else:
+        data = self.db_connection.search_art_name(self, validated_art_name, result['artist'])
+        for row in data:
+            print(row)
 
-    data = self.db_connection.search_art_name(self, validated_art_name, result['artist'])
-    for row in data:
-        print(row)
-
-    decision = input(f'Do you still wish to proceed and delete {validated_art_name}? (yes/no)  ')
-    while True:
-        if decision.lower() == 'yes':
-            row_updated = self.db_connection.delete_artwork(validated_art_name)
-            if row_updated == 0:
-                print(f'Error occurred. Unable to delete {validated_art_name} from the system.')
+        decision = input(f'Do you still wish to proceed and delete {validated_art_name}? (yes/no)  ')
+        while True:
+            if decision.lower() == 'yes':
+                row_updated = self.db_connection.delete_artwork(validated_art_name)
+                if row_updated == 0:
+                    print(f'Error occurred. Unable to delete {validated_art_name} from the system.')
+                else:
+                    print(f'Successfully deleted the {validated_art_name} from the system')
+            elif decision.lower() == 'no':
+                print('Cancelling request.')
+                break
             else:
-                print(f'Successfully deleted the {validated_art_name} from the system')
-        elif decision.lower() == 'no':
-            print('Cancelling request.')
-            break
-        else:
-            decision = input(f'Invalid input. Please enter \'yes\' or \'no\' only.    ')
+                decision = input(f'Invalid input. Please enter \'yes\' or \'no\' only.    ')
 
 
 def show_all_artwork(self):
@@ -252,6 +279,7 @@ def show_all_artist(self):
 def search_artist(self, name):
     data = self.db_connection.search_artist(name)
 
+    # When the artist is not in system
     if not data.exists():
         return None
     else:
@@ -262,6 +290,7 @@ def search_artist(self, name):
 def get_artist_model(self, name):
     data = self.db_connection.search_artist_model(name)
 
+    # When the artist is not in system
     if not data.exists():
         return None
     else:

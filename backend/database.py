@@ -19,7 +19,6 @@ class ArtDB:
             raise ArtStoreError(f'Error occurred while adding new artwork.\nMore detail: {e}\n')
 
     def show_all_artwork_one_artist(self, artist):
-
         try:
             artwork_list = Artwork.select().where(Artwork.artist == artist)
             return artwork_list
@@ -59,44 +58,54 @@ class ArtDB:
         try:
             artists = Artist.select().dicts()
             return artists
-        except ArtStoreError as e:
-            print(f'Error occurred.\nMore detail: {e}\n')
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
     def search_art_name(self, artname, artist):
         try:
             data = Artwork.select().where(Artwork.art_name == artname, Artwork.artist == artist)
             return data
-        except ArtStoreError as e:
-            print(f'Error occurred.\nMore detail: {e}\n')
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
     def get_artist_by_art_name(self, artname):
 
         try:
             data = Artwork.select().where(Artwork.art_name == artname).dicts()
             return data
-        except ArtStoreError as e:
-            print(f'Error occurred.\nMore detail: {e}\n')
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
     def delete_artwork(self, artname):
 
         try:
             updated_row = Artwork.delete().where(Artwork.art_name == artname).execute()
             return updated_row
-        except ArtStoreError as e:
-            print(f'Error occurred.\nMore detail: {e}\n')
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
     def artist_num(self):
-        num_artists = Artist.select().count()
-        return num_artists
+        try:
+
+            num_artists = Artist.select().count()
+
+            return num_artists
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
     def artwork_num(self):
-        num_artists = Artwork.select().count()
-        return num_artists
+        try:
+            num_artists = Artwork.select().count()
+            return num_artists
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
     def search_artwork(self, art_name):
-        data = Artwork.select().where(Artwork.art_name == art_name).dicts()
-        return data
-
+        try:
+            data = Artwork.select().where(Artwork.art_name == art_name).dicts()
+            return data
+        except IntegrityError as e:
+            raise ArtStoreError(f'Error occurred.\nMore detail: {e}\n')
 
 class ArtStoreError(Exception):
     pass
